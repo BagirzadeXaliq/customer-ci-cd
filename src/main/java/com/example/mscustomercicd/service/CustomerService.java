@@ -17,6 +17,13 @@ public class CustomerService {
 
     private final RabbitTemplate rabbitTemplate;
 
+    @CachePut(value = "customers", key = "#result.id")
+    public CustomerEntity createCustomer(CustomerEntity customer) {
+        CustomerEntity savedCustomer = repository.save(customer);
+        rabbitTemplate.convertAndSend("customer.exchange", "customer.routing", savedCustomer);
+        return savedCustomer;
+    }
+
     @Cacheable(value = "customers", key = "#id")
     public CustomerEntity getCustomer(Long id) {
         System.out.println("DB-dən oxundu: " + id);

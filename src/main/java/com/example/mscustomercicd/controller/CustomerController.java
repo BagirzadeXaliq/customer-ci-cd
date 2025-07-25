@@ -12,6 +12,11 @@ public class CustomerController {
 
     private final CustomerService service;
 
+    @PostMapping
+    public CustomerEntity createCustomer(@RequestBody CustomerEntity customer) {
+        return service.createCustomer(customer);
+    }
+
     @GetMapping("/{id}")
     public CustomerEntity getCustomer(@PathVariable Long id) {
         return service.getCustomer(id);

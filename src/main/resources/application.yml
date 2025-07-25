@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres
+    url: jdbc:postgresql://postgres-service:5432/postgres
     username: user
     password: mysecretpassword
     driver-class-name: org.postgresql.Driver
@@ -12,11 +12,11 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redis-service
       port: 6379
 
   rabbitmq:
-    host: localhost
+    host: rabbitmq-service
     port: 5672
     username: guest
     password: guest
