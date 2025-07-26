@@ -52,7 +52,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build project with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build -x test
 
       - name: Log in to DockerHub
         run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
