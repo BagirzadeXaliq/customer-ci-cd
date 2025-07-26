@@ -68,10 +68,10 @@ jobs:
         with:
           version: 'latest'
 
-#      - name: Set up Kubeconfig
-#        run: |
-#          mkdir -p ~/.kube
-#          echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
+      - name: Set up Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" > ~/.kube/config
 
       - name: Deploy to Kubernetes
         run: |
