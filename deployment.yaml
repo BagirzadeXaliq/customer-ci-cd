@@ -15,5 +15,6 @@ spec:
       containers:
         - name: springboot-container
           image: xaliqbagirzade/my-springboot-app:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
