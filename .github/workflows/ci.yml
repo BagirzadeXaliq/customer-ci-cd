@@ -112,8 +112,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: |
-          docker build -t ${{ env.IMAGE_REPO }}:${{ env.TAG }} .
+        run: docker build -t ${{ env.IMAGE_REPO }}:${{ env.TAG }} .
 
       - name: Push Docker Image
         run: |
@@ -124,7 +123,7 @@ jobs:
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-          kubectl config get-contexts
+          kubectl config current-context
             
             # Əsas addım: yalnız image dəyişəndə rollout baş versin
       - name: Update image in K8s (no manual restart)
