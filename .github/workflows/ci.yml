@@ -113,15 +113,10 @@ jobs:
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/my-springboot-app:latest
 
-#      - name: Set up kubectl
-#        run: |
-#          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-#          kubectl version --client
-
-      - name: Set up Kubeconfig
+      - name: Set up kubectl
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          kubectl version --client
 
       - name: Restart Kubernetes Deployment
         run: kubectl rollout restart deployment springboot-deployment
