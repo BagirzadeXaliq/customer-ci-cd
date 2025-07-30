@@ -93,8 +93,9 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      - name: Set Docker image tag
-        run: echo "IMAGE_TAG=$(date +%s)" >> $GITHUB_ENV
+      - name: Set image tag
+        id: vars
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Debug Secrets
         run: |
@@ -104,22 +105,52 @@ jobs:
             echo "::notice ::DOCKER_USERNAME secret is SET"
           fi
 
-      - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/my-springboot-app:latest .
-
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/my-springboot-app:latest
-
-      - name: Update K8s Deployment with new image
+      - name: Build Docker Image
         run: |
-            echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-            kubectl set image deployment/springboot-deployment springboot-container=${{ secrets.DOCKER_USERNAME }}/my-springboot-app:${{ env.IMAGE_TAG }}
+          docker build -t $IMAGE_REPO:${{ env.TAG }} .
+          # İstəyirsənsə latest də saxla:
+          docker tag $IMAGE_REPO:${{ env.TAG }} $IMAGE_REPO:latest
+
+      - name: Push Docker Image
+        run: |
+          docker push $IMAGE_REPO:${{ env.TAG }}
+          docker push $IMAGE_REPO:latest
+
+      - name: Set up kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          kubectl version --client
+          kubectl config current-context
+            
+            # Əsas addım: yalnız image dəyişəndə rollout baş versin
+      - name: Update image in K8s (no manual restart)
+        run: |
+          kubectl set image deployment/springboot-deployment \
+          springboot-container=$IMAGE_REPO:${{ env.TAG }}
+
+      - name: Wait for rollout to finish
+        run: kubectl rollout status deployment/springboot-deployment --timeout=120s
+
+            # İstəyə görə: uğursuzluqda rollback
+      - name: Show recent events on failure
+        if: failure()
+        run: |
+          kubectl get pods -o wide
+          kubectl describe deployment springboot-deployment || true
+          kubectl describe pods -l app=springboot-app || tr
+
+#      - name: Build Docker Image
+#        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/my-springboot-app:latest .
+#
+#      - name: Push Docker Image
+#        run: docker push ${{ secrets.DOCKER_USERNAME }}/my-springboot-app:latest
 
 #      - name: Set up kubectl
 #        run: |
